@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import com.example.dyf.screens.LoginScreen
 import com.example.dyf.ui.theme.DyfTheme
 
 class LoginActivity : ComponentActivity() {
@@ -19,7 +20,7 @@ class LoginActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Text(text = "Estamos en el login")
+                    LoginScreen()
                 }
             }
         }

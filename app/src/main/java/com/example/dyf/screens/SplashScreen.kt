@@ -28,6 +28,7 @@ fun SplashScreen(){
     val scale = remember {
         androidx.compose.animation.core.Animatable(0f)
     }
+
     LaunchedEffect(key1 = true) {
         scale.animateTo(
             targetValue = 0.9f,
@@ -70,6 +71,6 @@ fun SplashScreen(){
               color = MaterialTheme.colorScheme.onSecondaryContainer
           )
         } */
-    } 
+    }
 
 }
