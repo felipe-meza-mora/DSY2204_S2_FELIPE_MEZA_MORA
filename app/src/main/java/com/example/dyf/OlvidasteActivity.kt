@@ -3,40 +3,35 @@ package com.example.dyf
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.dyf.screens.LoginScreen
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.dyf.screens.OlvidasteScreen
+import com.example.dyf.screens.RegistrarseScreen
 import com.example.dyf.ui.theme.DyfTheme
 
-class LoginActivity : ComponentActivity() {
-    // Suponiendo que aquí guardamos el arreglo de usuarios
-    private val usuarios = mutableListOf<Map<String, String>>()
-
+class OlvidasteActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Aquí podrías recibir los usuarios desde RegistrarseActivity si los pasas por Intent
-        val usersFromIntent = intent.getSerializableExtra("usuarios") as? List<Map<String, String>>
-        if (usersFromIntent != null) {
-            usuarios.addAll(usersFromIntent)
-        }
-
+        enableEdgeToEdge()
         setContent {
             DyfTheme {
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LoginScreen(usuarios)
+                    OlvidasteScreen()
                 }
             }
         }
     }
-
-    // Método para devolver el arreglo de usuarios
-    fun getUsuarios(): List<Map<String, String>> {
-        return usuarios
-    }
 }
+
