@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Reg_user"
+rootProject.name = "dyf"
 include(":app")
  
