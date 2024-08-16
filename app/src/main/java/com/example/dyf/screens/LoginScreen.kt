@@ -23,11 +23,11 @@ import com.example.dyf.LoginActivity
 import com.example.dyf.OlvidasteActivity
 import com.example.dyf.R
 import com.example.dyf.RegistrarseActivity
-
+import com.example.dyf.data.UserData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(usuarios: List<Map<String, String>>) {
+fun LoginScreen(usuarios: List<UserData>) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -129,13 +129,16 @@ fun LoginScreen(usuarios: List<Map<String, String>>) {
 
                     if (valid) {
                         // Validar si el correo está registrado
-                        val usuario = usuarios.find { it["correo"] == email && it["password"] == password }
+                        val usuario = usuarios.find { it.correo == email && it.password == password }
 
                         if (usuario == null) {
                             Toast.makeText(context, "Cuenta no registrada o contraseña incorrecta", Toast.LENGTH_LONG).show()
                         } else {
                             Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_LONG).show()
-                            // Aquí puedes añadir el código para navegar a otra pantalla
+                            // Aquí podrías iniciar otra actividad o cambiar de pantalla
+                            // Por ejemplo:
+                            // val intent = Intent(context, HomeActivity::class.java)
+                            // context.startActivity(intent)
                         }
                     }
                 },
@@ -156,10 +159,7 @@ fun LoginScreen(usuarios: List<Map<String, String>>) {
                 fontSize = 14.sp,
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier.clickable {
-                    val intent = Intent(
-                        context,
-                        OlvidasteActivity::class.java
-                    )
+                    val intent = Intent(context, OlvidasteActivity::class.java)
                     context.startActivity(intent)
                 }
             )
@@ -172,10 +172,7 @@ fun LoginScreen(usuarios: List<Map<String, String>>) {
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable {
-                    val intent = Intent(
-                        context,
-                        RegistrarseActivity::class.java
-                    )
+                    val intent = Intent(context, RegistrarseActivity::class.java)
                     context.startActivity(intent)
                 }
             )

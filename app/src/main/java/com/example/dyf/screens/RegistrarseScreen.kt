@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistrarseScreen(onRegistroCompleto: (String, String, String, String, String) -> Unit) {
+fun RegistrarseScreen() {
     // Textos de entrada
     var rut by remember { mutableStateOf("") }
     var nombreCompleto by remember { mutableStateOf("") }
@@ -233,7 +233,7 @@ fun RegistrarseScreen(onRegistroCompleto: (String, String, String, String, Strin
             Button(
                 onClick = {
                     if (validateForm()) {
-                        onRegistroCompleto(rut, nombreCompleto, correo, password, recibirNotificaciones)
+
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),

@@ -7,18 +7,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.example.dyf.data.UserData
 import com.example.dyf.screens.LoginScreen
 import com.example.dyf.ui.theme.DyfTheme
 
 class LoginActivity : ComponentActivity() {
-    // Suponiendo que aquí guardamos el arreglo de usuarios
-    private val usuarios = mutableListOf<Map<String, String>>()
+    // Lista de usuarios
+    private val usuarios = mutableListOf<UserData>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Aquí podrías recibir los usuarios desde RegistrarseActivity si los pasas por Intent
-        val usersFromIntent = intent.getSerializableExtra("usuarios") as? List<Map<String, String>>
+        // Obtener usuarios desde el intent (si existe)
+        val usersFromIntent = intent.getSerializableExtra("usuarios") as? List<UserData>
         if (usersFromIntent != null) {
             usuarios.addAll(usersFromIntent)
         }
@@ -33,10 +34,5 @@ class LoginActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    // Método para devolver el arreglo de usuarios
-    fun getUsuarios(): List<Map<String, String>> {
-        return usuarios
     }
 }
