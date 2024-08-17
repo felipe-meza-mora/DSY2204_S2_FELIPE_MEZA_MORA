@@ -66,18 +66,18 @@ fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalCo
         val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         if (vibrator.hasVibrator()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                // Para API 26 y superiores
+
                 val vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
                 vibrator.vibrate(vibrationEffect)
             } else {
-                // Para versiones anteriores
+
                 @Suppress("DEPRECATION")
-                vibrator.vibrate(500) // Duración en milisegundos
+                vibrator.vibrate(500)
             }
         }
     }
 
-    // Validar formulario
+
     fun validateForm(): Boolean {
         val isValid: Boolean
 
@@ -92,12 +92,12 @@ fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalCo
         return isValid
     }
 
-    // Fondo
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF0F0F0)
     ) {
-        //Centrado en la pantalla con desplazamiento
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -112,7 +112,7 @@ fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalCo
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
 
-            // Campo de entrada de Rut
+
             OutlinedTextField(
                 value = rut,
                 onValueChange = { rut = it },
@@ -136,7 +136,7 @@ fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalCo
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de entrada de Nombre Completo
+
             OutlinedTextField(
                 value = nombreCompleto,
                 onValueChange = { nombreCompleto = it },
@@ -160,7 +160,7 @@ fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalCo
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de entrada de Correo
+
             OutlinedTextField(
                 value = correo,
                 onValueChange = { correo = it },
@@ -184,7 +184,7 @@ fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalCo
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de entrada de Password
+
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -209,7 +209,7 @@ fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalCo
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de validación de Password
+
             OutlinedTextField(
                 value = validarPassword,
                 onValueChange = { validarPassword = it },
@@ -234,7 +234,7 @@ fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalCo
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ComboBox (DropdownMenu) para recibir notificaciones
+
             Box(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = recibirNotificaciones,
@@ -270,7 +270,7 @@ fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalCo
 
             Button(
                 onClick = {
-                    // Validar que los campos no estén vacíos
+
                     var valid = true
                     if (rut.isBlank()) {
                         rutError = "El RUT no puede estar vacío"
@@ -300,7 +300,7 @@ fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalCo
                     }
 
                     if (valid) {
-                        // Crear el nuevo usuario
+
                         val newUser = UserData(
                             rut = rut,
                             nombreCompleto = nombreCompleto,
@@ -309,7 +309,7 @@ fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalCo
                             recibirNotificaciones = recibirNotificaciones
                         )
 
-                        // Obtener la lista actual de usuarios y agregar el nuevo usuario
+
                         CoroutineScope(Dispatchers.IO).launch {
                             val currentUsers = userPreferences.userPreferencesFlow.firstOrNull() ?: mutableListOf()
                             Log.d("RegistrarseScreen", "Current users: $currentUsers")
@@ -318,7 +318,7 @@ fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalCo
                             userPreferences.saveUserPreferences(updatedUsers)
                         }
 
-                        // Mostrar mensaje de confirmación y redirigir a la pantalla de login
+
                         dialogMessage = "Usuario registrado exitosamente"
                         showDialog = true
                         vibrate(context)
@@ -350,7 +350,7 @@ fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalCo
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
                         onClick = {
                             showDialog = false
-                            // Redirigir a la pantalla de login
+
                             context.startActivity(Intent(context, LoginActivity::class.java))
                         }
                     ) {

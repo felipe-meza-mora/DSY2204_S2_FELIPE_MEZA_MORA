@@ -21,7 +21,7 @@ import com.example.dyf.data.UserData
 import com.example.dyf.data.UserPreferences
 
 @Composable
-fun OlvidasteScreen(userPreferences: UserPreferences) { // Recibe la lista de usuarios
+fun OlvidasteScreen(userPreferences: UserPreferences) {
     // Estado de los campos
     var correo by remember { mutableStateOf("") }
     var rut by remember { mutableStateOf("") }
@@ -33,7 +33,7 @@ fun OlvidasteScreen(userPreferences: UserPreferences) { // Recibe la lista de us
     var errorMensaje by remember { mutableStateOf<String?>(null) }
     var userList by remember { mutableStateOf<List<UserData>>(emptyList()) }
 
-    // Contexto para mostrar Toasts
+
     val context = LocalContext.current
 
     var showDialog by remember { mutableStateOf(false) }
@@ -53,14 +53,14 @@ fun OlvidasteScreen(userPreferences: UserPreferences) { // Recibe la lista de us
                 val vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
                 vibrator.vibrate(vibrationEffect)
             } else {
-                // Para versiones anteriores
+
                 @Suppress("DEPRECATION")
-                vibrator.vibrate(500) // Duración en milisegundos
+                vibrator.vibrate(500)
             }
         }
     }
 
-    // Función para validar el formulario
+
     fun validateForm(): Boolean {
         var isValid = true
 
@@ -88,8 +88,7 @@ fun OlvidasteScreen(userPreferences: UserPreferences) { // Recibe la lista de us
 
             val usuario = userList.find { it.correo == correo && it.rut == rut }
             if (usuario != null) {
-                // Aquí puedes mostrar la contraseña del usuario de alguna manera
-                //Toast.makeText(context, "Contraseña: ${usuario.password}", Toast.LENGTH_SHORT).show()
+
                 dialogMessage = "Tu contraseña es: ${usuario.password}"
                 showDialog = true
                 vibrate(context)
@@ -106,7 +105,7 @@ fun OlvidasteScreen(userPreferences: UserPreferences) { // Recibe la lista de us
     // Composable
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF0F0F0) // Color de fondo
+        color = Color(0xFFF0F0F0)
     ) {
         Column(
             modifier = Modifier

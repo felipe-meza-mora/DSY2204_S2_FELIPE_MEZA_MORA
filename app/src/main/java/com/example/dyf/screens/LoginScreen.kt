@@ -1,6 +1,11 @@
 package com.example.dyf.screens
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.dyf.MenuActivity
 import com.example.dyf.OlvidasteActivity
 import com.example.dyf.R
 import com.example.dyf.RegistrarseActivity
@@ -38,6 +44,21 @@ fun LoginScreen() {
     // Leer datos de usuarios al iniciar la pantalla
     val usersList by userPreferences.userPreferencesFlow.collectAsState(initial = emptyList())
 
+    fun vibrate(context: Context) {
+        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        if (vibrator.hasVibrator()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Para API 26 y superiores
+                val vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
+                vibrator.vibrate(vibrationEffect)
+            } else {
+                // Para versiones anteriores
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(500) // Duración en milisegundos
+            }
+        }
+    }
+
     // Validar credenciales
     fun validateCredentials() {
         var valid = true
@@ -53,10 +74,20 @@ fun LoginScreen() {
         if (valid) {
             val user = usersList.find { it.correo == email && it.password == password }
             if (user != null) {
-                // Redirigir a otra pantalla o mostrar un mensaje de éxito
-                // Aquí puedes agregar lógica para el inicio de sesión exitoso
+
+                val sharedPreferences = context.getSharedPreferences("UserSession", Context.MODE_PRIVATE)
+                val editor = sharedPreferences.edit()
+                editor.putString("userName", user.nombreCompleto)
+                editor.putString("userEmail", user.correo)
+                editor.apply()
+                vibrate(context)
+                val intent = Intent(context, MenuActivity::class.java)
+                context.startActivity(intent)
+
+                //(context as Activity).finish()
+
             } else {
-                // Mostrar error de credenciales
+                vibrate(context)
                 emailError = "Credenciales incorrectas"
             }
         }
@@ -155,7 +186,7 @@ fun LoginScreen() {
             Text(
                 "¿Olvidaste tu contraseña?",
                 color = Color(0xFF969088),
-                fontSize = 14.sp,
+                fontSize = 20.sp,
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier.clickable {
                     val intent = Intent(context, OlvidasteActivity::class.java)
@@ -168,7 +199,7 @@ fun LoginScreen() {
             Text(
                 "Registrarse",
                 color = Color(0xFF969088),
-                fontSize = 14.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable {
                     val intent = Intent(context, RegistrarseActivity::class.java)
