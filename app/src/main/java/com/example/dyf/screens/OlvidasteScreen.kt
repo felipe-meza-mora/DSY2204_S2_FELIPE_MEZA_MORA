@@ -1,3 +1,8 @@
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -9,9 +14,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import android.widget.Toast
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.example.dyf.LoginActivity
+import com.example.dyf.data.UserData
+import com.example.dyf.data.UserPreferences
 
 @Composable
-fun OlvidasteScreen() {
+fun OlvidasteScreen(userPreferences: UserPreferences) { // Recibe la lista de usuarios
     // Estado de los campos
     var correo by remember { mutableStateOf("") }
     var rut by remember { mutableStateOf("") }
@@ -19,9 +29,36 @@ fun OlvidasteScreen() {
     // Estados para errores de validación
     var correoError by remember { mutableStateOf<String?>(null) }
     var rutError by remember { mutableStateOf<String?>(null) }
+    var password by remember { mutableStateOf<String?>(null) }
+    var errorMensaje by remember { mutableStateOf<String?>(null) }
+    var userList by remember { mutableStateOf<List<UserData>>(emptyList()) }
 
     // Contexto para mostrar Toasts
     val context = LocalContext.current
+
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogMessage by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        userPreferences.userPreferencesFlow.collect { users ->
+            userList = users
+        }
+    }
+
+    fun vibrate(context: Context) {
+        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        if (vibrator.hasVibrator()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Para API 26 y superiores
+                val vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
+                vibrator.vibrate(vibrationEffect)
+            } else {
+                // Para versiones anteriores
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(500) // Duración en milisegundos
+            }
+        }
+    }
 
     // Función para validar el formulario
     fun validateForm(): Boolean {
@@ -32,7 +69,38 @@ fun OlvidasteScreen() {
 
         isValid = correoError == null && rutError == null
 
+        if (isValid) {
+            val user = userList.find { it.correo == correo && it.rut == rut }
+            if (user == null) {
+                correoError = "Datos erróneos"
+                rutError = "Datos erróneos"
+                isValid = false
+            } else {
+                password = user.password
+            }
+        }
+
         return isValid
+    }
+
+    fun recuperar(){
+        if (validateForm()) {
+
+            val usuario = userList.find { it.correo == correo && it.rut == rut }
+            if (usuario != null) {
+                // Aquí puedes mostrar la contraseña del usuario de alguna manera
+                //Toast.makeText(context, "Contraseña: ${usuario.password}", Toast.LENGTH_SHORT).show()
+                dialogMessage = "Tu contraseña es: ${usuario.password}"
+                showDialog = true
+                vibrate(context)
+            } else {
+                errorMensaje = "Los datos son erróneos"
+                dialogMessage = "Los datos son erróneos"
+                showDialog = true
+                vibrate(context)
+            }
+
+        }
     }
 
     // Composable
@@ -60,7 +128,9 @@ fun OlvidasteScreen() {
                 onValueChange = { correo = it },
                 label = { Text("Correo Electrónico") },
                 isError = correoError != null,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { contentDescription = "Campo de entrada de Correo Electrónico" },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = if (correoError != null) Color(0xFFFF5449) else Color(0xFFFFC107),
@@ -83,7 +153,9 @@ fun OlvidasteScreen() {
                 onValueChange = { rut = it },
                 label = { Text("RUT") },
                 isError = rutError != null,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { contentDescription = "Campo de entrada del Rut" },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = if (rutError != null) Color(0xFFFF5449) else Color(0xFFFFC107),
@@ -104,9 +176,7 @@ fun OlvidasteScreen() {
             Button(
                 onClick = {
                     if (validateForm()) {
-                        // Acción de recuperar contraseña (ej. mostrar mensaje de éxito)
-                        Toast.makeText(context, "Recuperar contraseña", Toast.LENGTH_SHORT).show()
-                        // Aquí podrías agregar la lógica para enviar un correo o verificar los datos
+                        recuperar()
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -117,6 +187,24 @@ fun OlvidasteScreen() {
                 Text("Recuperar Contraseña", color = Color(0xFF000000))
             }
         }
+
+        if(showDialog){
+            AlertDialog(
+                onDismissRequest = { showDialog = false},
+                title = { Text("Resultado")},
+                text = { Text(dialogMessage, color = Color(0xFF000000))},
+                confirmButton = {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
+                        onClick = {
+                            showDialog = false
+                            context.startActivity(Intent(context, LoginActivity::class.java))
+                        }
+                    ){
+                        Text("Aceptar", color = Color(0xFF000000))
+                    }
+                }
+            )
+        }
     }
 }
-

@@ -7,19 +7,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.dyf.data.UserData
+import com.example.dyf.data.UserPreferences
 import com.example.dyf.screens.LoginScreen
 import com.example.dyf.ui.theme.DyfTheme
 
 class LoginActivity : ComponentActivity() {
     // Lista de usuarios
-    private val usuarios = mutableListOf<UserData>()
+    private val usuarios = mutableListOf<UserPreferences>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Obtener usuarios desde el intent (si existe)
-        val usersFromIntent = intent.getSerializableExtra("usuarios") as? List<UserData>
+        val usersFromIntent = intent.getSerializableExtra("usuarios") as? List<UserPreferences>
         if (usersFromIntent != null) {
             usuarios.addAll(usersFromIntent)
         }
@@ -30,7 +30,7 @@ class LoginActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LoginScreen(usuarios)
+                    LoginScreen()
                 }
             }
         }

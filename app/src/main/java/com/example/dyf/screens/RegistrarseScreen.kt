@@ -1,6 +1,13 @@
 package com.example.dyf.screens
 
 
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,14 +18,28 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.dyf.LoginActivity
+import com.example.dyf.data.UserData
+import com.example.dyf.data.UserPreferences
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistrarseScreen() {
+fun RegistrarseScreen(userPreferences: UserPreferences = UserPreferences(LocalContext.current)) {
+
+    val context = LocalContext.current
+
     // Textos de entrada
     var rut by remember { mutableStateOf("") }
     var nombreCompleto by remember { mutableStateOf("") }
@@ -38,9 +59,27 @@ fun RegistrarseScreen() {
     val opcionesNotificaciones = listOf("Sí", "No")
     var expanded by remember { mutableStateOf(false) }
 
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogMessage by remember { mutableStateOf("") }
+
+    fun vibrate(context: Context) {
+        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        if (vibrator.hasVibrator()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Para API 26 y superiores
+                val vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
+                vibrator.vibrate(vibrationEffect)
+            } else {
+                // Para versiones anteriores
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(500) // Duración en milisegundos
+            }
+        }
+    }
+
     // Validar formulario
     fun validateForm(): Boolean {
-        var isValid = true
+        val isValid: Boolean
 
         rutError = if (rut.isBlank()) "Campo requerido" else null
         nombreCompletoError = if (nombreCompleto.isBlank()) "Campo requerido" else null
@@ -79,7 +118,7 @@ fun RegistrarseScreen() {
                 onValueChange = { rut = it },
                 label = { Text("Rut") },
                 isError = rutError != null,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Campo de entrada de Rut" },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = if (rutError != null) Color(0xFFFF5449) else Color(0xFFFFC107),
@@ -103,7 +142,7 @@ fun RegistrarseScreen() {
                 onValueChange = { nombreCompleto = it },
                 label = { Text("Nombre Completo") },
                 isError = nombreCompletoError != null,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Campo de entrada de Nombre Completo" },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = if (nombreCompletoError != null) Color(0xFFFF5449) else Color(0xFFFFC107),
@@ -127,7 +166,7 @@ fun RegistrarseScreen() {
                 onValueChange = { correo = it },
                 label = { Text("Correo Electrónico") },
                 isError = correoError != null,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Campo de entrada de Correo Electrónico" },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = if (correoError != null) Color(0xFFFF5449) else Color(0xFFFFC107),
@@ -229,20 +268,108 @@ fun RegistrarseScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón de Registrarse
             Button(
                 onClick = {
-                    if (validateForm()) {
+                    // Validar que los campos no estén vacíos
+                    var valid = true
+                    if (rut.isBlank()) {
+                        rutError = "El RUT no puede estar vacío"
+                        valid = false
+                    }
+                    if (nombreCompleto.isBlank()) {
+                        nombreCompletoError = "El nombre completo no puede estar vacío"
+                        valid = false
+                    }
+                    if (correo.isBlank()) {
+                        correoError = "El correo no puede estar vacío"
+                        valid = false
+                    }
+                    if (password.isBlank()) {
+                        passwordError = "La contraseña no puede estar vacía"
+                        valid = false
+                    } else if (password != validarPassword) {
+                        validarPasswordError = "Las contraseñas no coinciden"
+                        valid = false
+                    } else {
+                        validarPasswordError = null
+                    }
+                    if (recibirNotificaciones.isBlank()) {
+                        var recibirNotificacionesError =
+                            "La opción de notificaciones no puede estar vacía"
+                        valid = false
+                    }
 
+                    if (valid) {
+                        // Crear el nuevo usuario
+                        val newUser = UserData(
+                            rut = rut,
+                            nombreCompleto = nombreCompleto,
+                            correo = correo,
+                            password = password,
+                            recibirNotificaciones = recibirNotificaciones
+                        )
+
+                        // Obtener la lista actual de usuarios y agregar el nuevo usuario
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val currentUsers = userPreferences.userPreferencesFlow.firstOrNull() ?: mutableListOf()
+                            Log.d("RegistrarseScreen", "Current users: $currentUsers")
+                            val updatedUsers = currentUsers.toMutableList().apply { add(newUser) }
+                            Log.d("RegistrarseScreen", "Updated users: $updatedUsers")
+                            userPreferences.saveUserPreferences(updatedUsers)
+                        }
+
+                        // Mostrar mensaje de confirmación y redirigir a la pantalla de login
+                        dialogMessage = "Usuario registrado exitosamente"
+                        showDialog = true
+                        vibrate(context)
+                    } else {
+                        // Mostrar mensajes de error
+                        dialogMessage = "Error al registrar usuario. Verifique los campos."
+                        showDialog = true
+                        vibrate(context)
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFFFC107)
                 )
-            ) {
+            )
+
+            {
                 Text("Registrarse", color = Color(0xFF000000))
             }
         }
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Registro") },
+                text = { Text(dialogMessage, color = Color(0xFF000000))},
+                confirmButton = {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
+                        onClick = {
+                            showDialog = false
+                            // Redirigir a la pantalla de login
+                            context.startActivity(Intent(context, LoginActivity::class.java))
+                        }
+                    ) {
+                        Text("Aceptar", color = Color(0xFF000000))
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = { showDialog = false }
+                    ) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
+
+
+
+
     }
 }

@@ -1,7 +1,6 @@
 package com.example.dyf.screens
 
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,24 +18,50 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.example.dyf.LoginActivity
 import com.example.dyf.OlvidasteActivity
 import com.example.dyf.R
 import com.example.dyf.RegistrarseActivity
-import com.example.dyf.data.UserData
+import com.example.dyf.data.UserPreferences
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(usuarios: List<UserData>) {
+fun LoginScreen() {
     val context = LocalContext.current
+    val userPreferences = remember { UserPreferences(context) }
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    // Errores
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
 
-    // Fondo
+    // Leer datos de usuarios al iniciar la pantalla
+    val usersList by userPreferences.userPreferencesFlow.collectAsState(initial = emptyList())
+
+    // Validar credenciales
+    fun validateCredentials() {
+        var valid = true
+        if (email.isBlank()) {
+            emailError = "El correo no puede estar vacío"
+            valid = false
+        }
+        if (password.isBlank()) {
+            passwordError = "La contraseña no puede estar vacía"
+            valid = false
+        }
+
+        if (valid) {
+            val user = usersList.find { it.correo == email && it.password == password }
+            if (user != null) {
+                // Redirigir a otra pantalla o mostrar un mensaje de éxito
+                // Aquí puedes agregar lógica para el inicio de sesión exitoso
+            } else {
+                // Mostrar error de credenciales
+                emailError = "Credenciales incorrectas"
+            }
+        }
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF0F0F0)
@@ -115,33 +140,7 @@ fun LoginScreen(usuarios: List<UserData>) {
 
             // Iniciar Sesión
             Button(
-                onClick = {
-                    // Validar que los campos no estén vacíos
-                    var valid = true
-                    if (email.isBlank()) {
-                        emailError = "El correo no puede estar vacío"
-                        valid = false
-                    }
-                    if (password.isBlank()) {
-                        passwordError = "La contraseña no puede estar vacía"
-                        valid = false
-                    }
-
-                    if (valid) {
-                        // Validar si el correo está registrado
-                        val usuario = usuarios.find { it.correo == email && it.password == password }
-
-                        if (usuario == null) {
-                            Toast.makeText(context, "Cuenta no registrada o contraseña incorrecta", Toast.LENGTH_LONG).show()
-                        } else {
-                            Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_LONG).show()
-                            // Aquí podrías iniciar otra actividad o cambiar de pantalla
-                            // Por ejemplo:
-                            // val intent = Intent(context, HomeActivity::class.java)
-                            // context.startActivity(intent)
-                        }
-                    }
-                },
+                onClick = { validateCredentials() },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFFFC107)
